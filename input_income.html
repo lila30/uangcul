@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>UangCul - Input Pendapatan</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Navbar Start -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <img src="img\Logo uangcul.svg" alt="Logo" style="height: 50px; margin-right: 10px;">
+                <span class="fw-bold fs-4">UANGCUL</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="input_outcome.html">Input Pengeluaran</a></li>
+                    <li class="nav-item"><a class="nav-link" href="input_income.html">Input Pendapatan</a></li>
+                    <li class="nav-item"><a class="nav-link" href="analysis.html">Analisis</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Navbar End -->
+
+    <div class="container my-5">
+        <h2 class="mb-4">Input Pendapatan</h2>
+        <div class="mb-3">
+            <label class="form-label">Pilih Kategori:</label><br>
+            <button class="btn btn-outline-primary" onclick="selectCategory('Gaji/Upah')">Gaji/Upah</button>
+            <button class="btn btn-outline-primary" onclick="selectCategory('Tunjangan')">Tunjangan</button>
+            <button class="btn btn-outline-primary" onclick="selectCategory('Bonus')">Bonus</button>
+            <button class="btn btn-outline-primary" onclick="selectCategory('Lainnya')">Lainnya</button>
+            <input type="text" id="customCategory" class="form-control mt-2" placeholder="Nama Kategori Lainnya" oninput="selectCustomCategory()">
+        </div>
+        <div class="mb-3">
+            <label for="date" class="form-label">Tanggal:</label>
+            <input type="date" id="date" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="amount" class="form-label">Nominal:</label>
+            <input type="number" id="amount" class="form-control" placeholder="Nominal" required>
+        </div>
+        <button class="btn btn-success" onclick="addIncome()">Tambah</button>
+        <button class="btn btn-warning" onclick="resetForm()">Reset</button>
+        
+        <h4 class="mt-4">Daftar Transaksi Pendapatan</h4>
+        <ul id="transactionList" class="list-group mt-2"></ul>        
+        <h4 class="mt-4">Total Pendapatan: Rp<span id="totalIncome">0</span></h4>
+        <button class="btn btn-danger mt-3" onclick="resetTransactions()">Hapus Semua</button>
+    </div>
+
+    <script>
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let selectedCategory = "";
+
+        function selectCategory(category) {
+            selectedCategory = category;
+            document.getElementById("customCategory").value = "";
+        }
+
+        function selectCustomCategory() {
+            selectedCategory = document.getElementById("customCategory").value;
+        }
+
+        function addIncome() {
+            const date = document.getElementById("date").value;
+            const amount = parseFloat(document.getElementById("amount").value);
+            
+            if (!selectedCategory || !date || isNaN(amount) || amount <= 0) return;
+
+            const newTransaction = { type: 'income', date, amount, category: selectedCategory };
+            transactions.push(newTransaction);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            updateTransactionList();
+            resetForm();
+        }
+
+        function resetForm() {
+            document.getElementById("date").value = "";
+            document.getElementById("amount").value = "";
+            document.getElementById("customCategory").value = "";
+            selectedCategory = "";
+        }
+
+        function deleteTransaction(index) {
+            transactions.splice(index, 1);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            updateTransactionList();
+        }
+
+        function resetTransactions() {
+            if (confirm("Apakah Anda yakin ingin menghapus semua riwayat pengeluaran?")) {
+                transactions = [];
+                localStorage.removeItem('transactions');
+                updateTransactionList();
+            }
+        }
+
+        function updateTransactionList() {
+            const list = document.getElementById("transactionList");
+            list.innerHTML = "";
+            let totalIncome = 0;
+
+            transactions.forEach((t, index) => {
+                if (t.type === 'income') {
+                    totalIncome += t.amount;
+                    const li = document.createElement("li");
+                    li.className = "list-group-item d-flex justify-content-between align-items-center";
+                    li.innerHTML = `${t.date} - ${t.category}: Rp${t.amount.toLocaleString()} <button class="btn btn-danger btn-sm" onclick="deleteTransaction(${index})">Hapus</button>`;
+                    list.appendChild(li);
+                }
+            });
+            document.getElementById("totalIncome").textContent = totalIncome.toLocaleString();
+        }
+
+        window.onload = function() {
+            updateTransactionList();
+        };
+    </script>
+
+    <!-- Copyright Start -->
+    <head>
+        <style>
+        
+            .copyright {
+                position:relative;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background-color: #00C98E;
+                color: white;
+                text-align: center;
+                padding: 10px 0;
+            }
+    
+            .copyright a {
+                color: white;
+                text-decoration: none;
+                font-weight: bold;
+            }
+        </style>
+    <div class="container-fluid copyright py-4">
+        <div class="container">
+            <div class="row g-4 align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-md-0">
+                    <span class="text-body"><a href="#" class="border-bottom text-white"><i class="fas fa-copyright text-light me-2"></i>UANGCUL</a>, All right reserved.</span>
+                </div>
+                <div class="col-md-6 text-center text-md-end text-body">
+                    Sekolah Vokasi, Universitas Gadjah Mada<a class="border-bottom text-white"></a> By <a class="border-bottom text-white">Kelompok 2</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    </head>
+    <!-- Copyright End -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

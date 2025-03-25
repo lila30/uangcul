@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>UangCul - Analisis</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1; /* Membuat kontainer utama mengisi ruang yang tersedia */
+        }
+
+        footer {
+            margin-top: auto; /* Memastikan footer berada di bawah */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar Start -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="img\Logo uangcul.svg" alt="Logo" style="height: 50px; margin-right: 10px;">
+                <span class="fw-bold fs-4">UANGCUL</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="input_outcome.html">Input Pengeluaran</a></li>
+                    <li class="nav-item"><a class="nav-link" href="input_income.html">Input Pendapatan</a></li>
+                    <li class="nav-item"><a class="nav-link" href="analysis.html">Analisis</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Navbar End -->
+
+    <div class="container my-5">
+        <h3 class="mb-4">Analisis</h3>
+        <select id="analysisType" class="form-select mb-4" onchange="updateChart()">
+            <option value="outcome">Analisis Pengeluaran</option>
+            <option value="income">Analisis Pendapatan</option>
+        </select>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="chart-container mb-4">
+                    <canvas id="chart" width="70" height="70"></canvas> <!-- Mengatur ukuran chart -->
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h4 class="small">Daftar Transaksi</h4>
+                <ul id="transactionListAnalysis" class="list-group"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || []; // Mengambil data transaksi dari localStorage
+        let chart;
+
+        function updateChart() {
+            const analysisType = document.getElementById("analysisType").value;
+            const filteredTransactions = transactions.filter(t => t.type === analysisType);
+            const categoryMap = {};
+
+            filteredTransactions.forEach(t => {
+                if (!categoryMap[t.category]) {
+                    categoryMap[t.category] = 0;
+                }
+                categoryMap[t.category] += t.amount;
+            });
+
+            const labels = Object.keys(categoryMap);
+            const data = Object.values(categoryMap);
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            const ctx = document.getElementById("chart").getContext("2d");
+            chart = new Chart(ctx, {
+                type: "pie",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"]
+                    }]
+                },
+                options: {
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    const label = tooltipItem.label || '';
+                                    const value = tooltipItem.raw || 0;
+                                    return `${label}: Rp${value.toLocaleString()}`; // Menampilkan label dan nilai
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            updateTransactionList();
+        }
+
+        function updateTransactionList() {
+            const analysisType = document.getElementById("analysisType").value;
+            const filteredTransactions = transactions.filter(t => t.type === analysisType);
+            const list = document.getElementById("transactionListAnalysis");
+            list.innerHTML = "";
+
+            filteredTransactions.forEach(t => {
+                const li = document.createElement("li");
+                li.className = "list-group-item";
+                li.textContent = `${t.date} - ${t.category}: Rp${t.amount.toLocaleString()}`;
+                list.appendChild(li);
+            });
+        }
+
+        // Memanggil updateChart saat halaman dimuat
+        window.onload = updateChart;
+    </script>
+
+    
+    <!-- Copyright Start -->
+    <head>
+        <style>
+        
+            .copyright {
+                position: relative;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background-color: #00C98E;
+                color: white;
+                text-align: center;
+                padding: 10px 0;
+            }
+    
+            .copyright a {
+                color: white;
+                text-decoration: none;
+                font-weight: bold;
+            }
+        </style>
+    <div class="container-fluid copyright py-4">
+        <div class="container">
+            <div class="row g-4 align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-md-0">
+                    <span class="text-body"><a href="#" class="border-bottom text-white"><i class="fas fa-copyright text-light me-2"></i>UANGCUL</a>, All right reserved.</span>
+                </div>
+                <div class="col-md-6 text-center text-md-end text-body">
+                    Sekolah Vokasi, Universitas Gadjah Mada<a class="border-bottom text-white"></a> By <a class="border-bottom text-white">Kelompok 2</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    </head>
+    <!-- Copyright End -->
+
+
+    <!-- JavaScript Libraries -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/wow/wow.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/counterup/counterup.min.js"></script>
+    <script src="lib/lightbox/js/lightbox.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+
+    <!-- Template Javascript -->
+    <script src="js/main.js"></script>
+</body>
+
+</html>
